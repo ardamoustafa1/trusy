@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrustMask AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #ec4899;
+            --accent: #8b5cf6;
+            --glass-bg: rgba(17, 25, 40, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.125);
+            --text-main: #ffffff;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #0f172a;
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image:
+                radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
+                radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 1) 0, transparent 50%),
+                radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 1) 0, transparent 50%);
+            position: relative;
+        }
+
+        /* Ambient Background mesh */
+        .ambient-light {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.6;
+            animation: float 20s infinite alternate;
+        }
+
+        .blob-1 {
+            top: -10%;
+            left: -10%;
+            width: 50vw;
+            height: 50vw;
+            background: #4c1d95;
+            animation-delay: 0s;
+        }
+
+        .blob-2 {
+            bottom: -10%;
+            right: -10%;
+            width: 60vw;
+            height: 60vw;
+            background: #0f4c75;
+            animation-delay: -5s;
+        }
+
+        .blob-3 {
+            top: 40%;
+            left: 40%;
+            width: 40vw;
+            height: 40vw;
+            background: #be185d;
+            opacity: 0.4;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(50px, 50px) rotate(20deg);
+            }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            min-height: 100vh;
+            /* Allow growth */
+            height: auto;
+        }
+
+        /* Glass Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .brand {
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .icon-box {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+        }
+
+        .status-badge {
+            padding: 8px 16px;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 100px;
+            color: #34d399;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #34d399;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #34d399;
+        }
+
+        /* Main Workspace Glass */
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            flex: 1;
+            min-height: 60vh;
+            /* Expanded height */
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .card-title {
+            font-weight: 500;
+            font-size: 1.1rem;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .editor-area {
+            flex: 1;
+            position: relative;
+            min-height: 0;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            border: none;
+            padding: 2rem;
+            color: #f8fafc;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            line-height: 1.7;
+            resize: none;
+            white-space: pre-wrap;
+        }
+
+        textarea:focus {
+            outline: none;
+        }
+
+        textarea::placeholder {
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .output-viewer {
+            width: 100%;
+            height: 100%;
+            padding: 2rem;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--text-muted);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .output-viewer.active {
+            color: #f8fafc;
+        }
+
+        /* Magic Objects (Detected Entities) */
+        .magic-highlight {
+            position: relative;
+            display: inline-block;
+            color: #c4b5fd;
+            font-weight: 600;
+            text-shadow: 0 0 10px rgba(139, 92, 246, 0.4);
+            transition: all 0.3s;
+            cursor: default;
+        }
+
+        .magic-highlight::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            opacity: 0.6;
+        }
+
+        .magic-highlight:hover {
+            color: #fff;
+            text-shadow: 0 0 15px rgba(139, 92, 246, 0.8);
+        }
+
+        /* Integrated Scan Button */
+        .card-actions {
+            padding: 1.5rem;
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: flex-end;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 16px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6);
+        }
+
+        .btn-action:disabled {
+            opacity: 0.7;
+            cursor: wait;
+            transform: none;
+        }
+
+        /* Scenario Pills (Restored) */
+        .scenarios {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .pill {
+            padding: 0.75rem 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: 0.3s;
+            backdrop-filter: blur(5px);
+        }
+
+        .pill:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Report Panel (Stats & Tags) */
+        /* Report Panel (Compact) */
+        .report-panel {
+            grid-column: 1 / -1;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: none;
+            animation: slideUp 0.5s ease;
+        }
+
+        .report-panel.visible {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+
+        .metric-card {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            transition: 0.3s;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .metric-val {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tag-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(245, 158, 11, 0.1);
+            /* Warning/Orange Tint */
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 100px;
+            color: #d97706;
+            /* Amber-600 */
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .workspace-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                height: auto;
+            }
+
+            .scan-action {
+                position: fixed;
+                bottom: 2rem;
+                width: 90%;
+            }
+
+            .btn-magic {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* Loading */
+        .scanning-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent, rgba(99, 102, 241, 0.2), transparent);
+            transform: translateY(-100%);
+            animation: scan 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            display: none;
+            pointer-events: none;
+        }
+
+        .scanning .scanning-line {
+            display: block;
+        }
+
+        @keyframes scan {
+            0% {
+                transform: translateY(-100%);
+            }
+
+            100% {
+                transform: translateY(100%);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Ambient Background -->
+    <div class="ambient-light">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="brand">
+                <span class="logo-icon">🛡️</span> TrustMask AI
+            </div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                SYSTEM ONLINE
+            </div>
+        </header>
+
+        <div class="scenarios">
+            <button class="pill" onclick="loadSample(1)">📱 Telekomünikasyon</button>
+            <button class="pill" onclick="loadSample(2)">🏦 Bankacılık</button>
+            <button class="pill" onclick="loadSample(3)">🚗 Sigorta</button>
+            <button class="pill" onclick="loadSample(4)">📦 Lojistik</button>
+        </div>
+
+        <!-- Detailed Report Panel (Moved Up) -->
+        <div class="glass-card report-panel" id="reportPanel">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-val" id="repTotal">0</div>
+                    <div class="metric-label">Tespit Edilen</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-val" id="repTypes">0</div>
+                    <div class="metric-label">Veri Tipi</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-val" id="repOriginal">0</div>
+                    <div class="metric-label">Orijinal Karakter</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-val" id="repResult">0</div>
+                    <div class="metric-label">Sonuç Karakter</div>
+                </div>
+            </div>
+            <div class="tags-container" id="repTags">
+                <!-- Tags will be injected here -->
+            </div>
+        </div>
+
+        <div class="workspace-grid">
+            <!-- INPUT -->
+            <div class="glass-card" id="inputCard">
+                <div class="card-header">
+                    <span class="card-title">Veri Girişi</span>
+                    <button class="pill" style="padding: 0.4rem 1rem; font-size:0.8rem;"
+                        onclick="clearAll()">Temizle</button>
+                </div>
+                <div class="editor-area">
+                    <textarea id="inputText" placeholder="Analiz edilecek metni buraya yapıştırın..."></textarea>
+                    <div class="scanning-line"></div>
+                </div>
+                <!-- Action Footer -->
+                <div class="card-actions">
+                    <button class="btn-action" id="analyzeBtn" onclick="analyzeText()">
+                        <span>⚡ Analizi Başlat</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- OUTPUT -->
+            <div class="glass-card" id="outputCard" style="border-color: rgba(99, 102, 241, 0.3);">
+                <div class="card-header">
+                    <span class="card-title">Sonuç</span>
+                    <div class="stats-overlay" id="statsPanel" style="display:none;">
+                        <!-- Old stats removed, keeping div only if needed to avoid JS error until full cleanup, but actually I am removing JS references so safe to empty -->
+                    </div>
+                </div>
+                <div class="editor-area">
+                    <div id="outputArea" class="output-viewer">Sonuçlar burada şifrelenmiş olarak görüntülenecektir...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+
+    </div>
+
+    <script>
+        // Automatic detection: If on localhost, use port 5001. Otherwise (Vercel), use relative path.
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:5001'
+            : '';
+
+        // Samples logic preserved
+        const sampleConversations = {
+            1: `Müşteri: Merhaba, ben Fatma Özdemir. Faturamla ilgili bir sorunum var.
+Temsilci: Merhaba Fatma Hanım, site üzerinden bakıyorum. TC numaranızı 12345678901 olarak mı görüyorum?
+Müşteri: Hayır, 10000000146.
+Temsilci: Tamamdır. İletişim numaranız 0532 987 65 43 mü?
+Müşteri: Evet doğru. fatma.ozdemir@gmail.com adresine mail atabilirsiniz.`,
+            2: `Müşteri: Kredi kartı borcumu ödeyeceğim.
+Temsilci: Kart numaranızı alabilir miyim?
+Müşteri: 4532 0151 1283 0366
+Temsilci: Hangi IBAN hesabından çekim yapalım?
+Müşteri: TR330006100519786457841326 numaralı hesabımdan.`,
+            3: `Müşteri: Kaza yaptım, tutanak tutturacağım.
+Temsilci: Geçmiş olsun. Plaka nedir?
+Müşteri: 34 ABC 789.
+Temsilci: Kaza yeri adresi?
+Müşteri: Kadıköy Mahallesi Atatürk Caddesi No:15 İstanbul.
+Temsilci: Sözleşme numaranız SOZ-2024-123456 doğru mu?
+Müşteri: Evet doğru.`,
+            4: `Müşteri: Kargom gelmedi. Müşteri no: VOD-123456789
+Temsilci: Adres kontrolü yapıyorum: Bahçelievler Mah. Cumhuriyet Cad. No:42 Ankara.
+Müşteri: Doğrudur. IP adresim: 192.168.1.1`
+        };
+
+        function loadSample(num) {
+            const ta = document.getElementById('inputText');
+            ta.value = sampleConversations[num];
+            // Animation effect
+            ta.style.opacity = '0';
+            setTimeout(() => ta.style.opacity = '1', 200);
+        }
+
+        async function analyzeText() {
+            const inputText = document.getElementById('inputText').value.trim();
+            const outputArea = document.getElementById('outputArea');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const inputCard = document.getElementById('inputCard');
+
+            if (!inputText) return;
+
+            // Start Animation
+            analyzeBtn.disabled = true;
+            analyzeBtn.innerHTML = '<span>📡 İŞLENİYOR...</span>';
+            inputCard.classList.add('scanning');
+            outputArea.innerHTML = '';
+
+            try {
+                const response = await fetch(`${API_URL}/anonymize`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: inputText }),
+                });
+
+                if (!response.ok) throw new Error('API Error');
+                const data = await response.json();
+
+                // Process Highlights
+                let resultHTML = data.sanitized_text;
+                // Smart replacement for aesthetics
+                const placeholders = [
+                    '\\[TC_ID\\]', '\\[PHONE\\]', '\\[MOBILE_PHONE\\]', '\\[EMAIL\\]',
+                    '\\[ADDRESS\\]', '\\[HOME_ADDRESS\\]', '\\[IBAN\\]', '\\[CARD_INFO\\]',
+                    '\\[NAME\\]', '\\[SURNAME\\]', '\\[FULL_NAME\\]', '\\[CITY_DISTRICT\\]',
+                    '\\[CUSTOMER_ID\\]', '\\[CONTRACT_ID\\]', '\\[SOZLESME_NO\\]'
+                ];
+
+                // Generic replacement for any [CAPS_WITH_UNDERSCORE] to catch all
+                resultHTML = resultHTML.replace(/\[([A-Z0-9_]+)\]/g, (match, p1) => {
+                    return `<span class="magic-highlight" title="${p1}">[${p1}]</span>`;
+                });
+
+                outputArea.innerHTML = resultHTML;
+                outputArea.classList.add('active');
+
+                // Update Stats
+                const total = data.entities ? data.entities.length : 0;
+                const uniqueTypes = data.detected_data_types ? data.detected_data_types.length : 0;
+                const originalLen = inputText.length;
+                const resultLen = data.sanitized_text.length;
+
+                // Populate Report Panel
+                document.getElementById('repTotal').innerText = total;
+                document.getElementById('repTypes').innerText = uniqueTypes;
+                document.getElementById('repOriginal').innerText = originalLen;
+                document.getElementById('repResult').innerText = resultLen;
+
+                // Populate Tags
+                const tagsContainer = document.getElementById('repTags');
+                tagsContainer.innerHTML = '';
+                if (data.detected_data_types) {
+                    data.detected_data_types.forEach(type => {
+                        const tag = document.createElement('span');
+                        tag.className = 'tag-badge';
+                        tag.innerHTML = `⚠️ ${type}`;
+                        tagsContainer.appendChild(tag);
+                    });
+                }
+
+                // Show Panel
+                document.getElementById('reportPanel').classList.add('visible');
+                document.getElementById('reportPanel').style.display = 'flex'; // override css display:none via class, but ensure flexible
+
+            } catch (err) {
+                console.error(err);
+                outputArea.innerHTML = '<span style="color:#ef4444">⚠ Sistem Hatası: API bağlantısı kurulamadı.</span>';
+            } finally {
+                inputCard.classList.remove('scanning');
+                analyzeBtn.disabled = false;
+                analyzeBtn.innerHTML = '<span>⚡ Analizi Başlat</span>';
+            }
+        }
+
+        function clearAll() {
+            document.getElementById('inputText').value = '';
+            document.getElementById('outputArea').innerHTML = 'Sonuçlar burada şifrelenmiş olarak görüntülenecektir...';
+            document.getElementById('outputArea').classList.remove('active');
+
+            const panel = document.getElementById('reportPanel');
+            panel.classList.remove('visible');
+            panel.style.display = 'none';
+        }
+
+        // Ctrl+Enter
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') analyzeText();
+        });
+    </script>
+</body>
+
+</html>
