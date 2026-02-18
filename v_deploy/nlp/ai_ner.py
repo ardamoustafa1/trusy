@@ -58,12 +58,25 @@ class AINERDetector:
                     entity_type = self._map_entity_type(label)
                     if not entity_type:
                         continue
+                    
+                    # Word Boundary Check (Parça kelime eşleşmesini önle)
+                    # Örneğin "Sınav" kelimesindeki "av" kısmını isim sanmasın
+                    s_pos = res['start']
+                    e_pos = res['end']
+                    
+                    # Sol kontrol: Başlangıç 0 değilse ve önceki karakter harf/sayı ise atla
+                    if s_pos > 0 and text[s_pos-1].isalnum():
+                        continue
                         
+                    # Sağ kontrol: Bitiş uzunluktan küçükse ve sonraki karakter harf/sayı ise atla
+                    if e_pos < len(text) and text[e_pos].isalnum():
+                        continue
+
                     entities.append(DetectedEntity(
                         entity_type=entity_type,
-                        value=res.get('word', text[res['start']:res['end']]),
-                        start_pos=res['start'],
-                        end_pos=res['end'],
+                        value=res.get('word', text[s_pos:e_pos]),
+                        start_pos=s_pos,
+                        end_pos=e_pos,
                         confidence=float(res['score']),
                         context="ai_cloud_bert"
                     ))

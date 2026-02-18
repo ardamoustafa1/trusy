@@ -135,9 +135,9 @@ NAME_LIKE_COMMON_WORDS = {
     "gün", "ay", "yıl", "saat", "dakika", "saniye",
     "hafta", "pazartesi", "salı", "çarşamba", "perşembe", "cuma", "cumartesi", "pazar",
     "bugün", "yarın", "dün", "şimdi", "sonra", "önce",
-    # Aylar
-    "ocak", "şubat", "mart", "nisan", "mayıs", "haziran",
-    "temmuz", "ağustos", "eylül", "ekim", "kasım", "aralık",
+    # Aylar (İsim olanları çıkardık: Eylül, Nisan vs.)
+    "ocak", "şubat", "mart", "mayıs", "haziran",
+    "temmuz", "ağustos", "ekim", "kasım", "aralık",
     # Fiiller ve Yardımcı Fiiller
     "için", "ile", "gibi", "kadar", "göre", "karşı",
     "etmek", "yapmak", "almak", "vermek", "gelmek", "gitmek",
